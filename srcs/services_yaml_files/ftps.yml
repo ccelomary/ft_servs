@@ -1,0 +1,87 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ftps-volume
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ftps
+  labels:
+    app: ftps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ftps
+  template:
+    metadata:
+      labels:
+        app: ftps
+    spec:
+      containers:
+        - name: ftps
+          imagePullPolicy: Never
+          image: ftps
+          ports:
+          - containerPort: 21
+          - containerPort: 30000
+          - containerPort: 30001
+          - containerPort: 30002
+          - containerPort: 30003
+          - containerPort: 30004
+          - containerPort: 30005
+          - containerPort: 30006
+          volumeMounts:
+            - mountPath: /home/celomary
+              name: ftps-volume
+      volumes:
+        - name: ftps-volume
+          persistentVolumeClaim:
+              claimName: ftps-volume
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ftps-svc
+  labels:
+    app: ftps
+  annotations:
+    metallb.universe.tf/allow-shared-ip: shared
+spec:
+  type: LoadBalancer
+  selector:
+    app: ftps
+  ports:
+  - name: 'ftps'
+    port: 21
+    targetPort: 21
+  - name: 'passive0'
+    port:  30000
+    targetPort: 30000
+  - name: 'passive1'
+    port:  30001
+    targetPort: 30001
+  - name: 'passive2'
+    port:  30002
+    targetPort: 30002
+  - name: 'passive3'
+    port:  30003
+    targetPort: 30003
+  - name: 'passive4'
+    port:  30004
+    targetPort: 30004
+  - name: 'passive5'
+    port:  30005
+    targetPort: 30005
+  - name: 'passive6'
+    port:  30006
+    targetPort: 30006
